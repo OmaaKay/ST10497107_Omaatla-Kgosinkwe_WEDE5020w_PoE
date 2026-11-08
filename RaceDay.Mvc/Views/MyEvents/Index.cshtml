@@ -1,0 +1,80 @@
+@model List<EnrolmentDto>
+@{
+    ViewData["Title"] = "My events";
+    var today = DateOnly.FromDateTime(DateTime.Today);
+    var upcoming = Model.Where(e => e.EventDate >= today && e.Status != "Cancelled" && e.Status != "Completed").ToList();
+    var past = Model.Except(upcoming).OrderByDescending(e => e.EventDate).ToList();
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>My events</h1>
+            <p>Everything you've enrolled for, and where each enrolment stands.</p>
+        </div>
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index"><i class="bi bi-compass"></i> Find more events</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="rd-empty">
+            <i class="bi bi-ticket-perforated"></i>
+            <h3>You haven't enrolled for anything yet</h3>
+            <p>Browse upcoming events and pick your next challenge.</p>
+            <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Browse events</a>
+        </div>
+    }
+    else
+    {
+        <h2 class="mb-3">Upcoming</h2>
+        @if (!upcoming.Any())
+        {
+            <p class="text-muted">No upcoming enrolments.</p>
+        }
+        else
+        {
+            <div class="rd-table table-responsive mb-5">
+                <table class="table align-middle">
+                    <thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Category</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var en in upcoming)
+                    {
+                        <tr>
+                            <td><a class="fw-semibold" asp-controller="Events" asp-action="Details" asp-route-id="@en.EventId">@en.EventName</a></td>
+                            <td>@Display.Date(en.EventDate)</td>
+                            <td>@en.EventLocation</td>
+                            <td>@en.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="en.Status" /></td>
+                            <td class="text-end">
+                                <form asp-controller="MyEvents" asp-action="Cancel" asp-route-id="@en.EnrolmentId" method="post" data-confirm="Cancel your enrolment for @en.EventName?" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle"></i> Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (past.Any())
+        {
+            <h2 class="mb-3">Past &amp; cancelled</h2>
+            <div class="rd-table table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach (var en in past)
+                    {
+                        <tr>
+                            <td><a class="fw-semibold" asp-controller="Events" asp-action="Details" asp-route-id="@en.EventId">@en.EventName</a></td>
+                            <td>@Display.Date(en.EventDate)</td>
+                            <td>@en.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="en.Status" /></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

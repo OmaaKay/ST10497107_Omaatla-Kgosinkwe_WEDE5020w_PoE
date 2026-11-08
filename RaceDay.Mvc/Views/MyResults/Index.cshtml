@@ -1,0 +1,60 @@
+@model List<MyResultDto>
+@{
+    ViewData["Title"] = "My results";
+    var finished = Model.Where(r => r.FinishPosition is not null).ToList();
+    var best = finished.OrderBy(r => r.FinishPosition).FirstOrDefault();
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>My results</h1>
+            <p>Your personal race history across every event you've completed.</p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="rd-empty">
+            <i class="bi bi-trophy"></i>
+            <h3>No results yet</h3>
+            <p>Results appear here once an organiser has recorded them after your event.</p>
+            <a class="btn btn-primary" asp-controller="MyEvents" asp-action="Index">See my events</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-4"><div class="rd-stat"><i class="bi bi-flag-fill"></i><div class="rd-stat-value">@Model.Count</div><div class="rd-stat-label">Races completed</div></div></div>
+            <div class="col-sm-6 col-lg-4"><div class="rd-stat stat-yellow"><i class="bi bi-trophy-fill"></i><div class="rd-stat-value">@(best?.FinishPosition is int p ? Display.Ordinal(p) : "—")</div><div class="rd-stat-label">Best finishing position</div></div></div>
+            <div class="col-lg-4"><div class="rd-stat stat-green"><i class="bi bi-stopwatch-fill"></i><div class="rd-stat-value">@(best is null ? "—" : best.EventName)</div><div class="rd-stat-label">Best result event</div></div></div>
+        </div>
+
+        <div class="rd-table table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Event</th><th>Date</th><th>Category</th><th>Finish time</th><th>Position</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td><a class="fw-semibold" asp-controller="Events" asp-action="Details" asp-route-id="@r.EventId">@r.EventName</a></td>
+                        <td>@Display.Date(r.EventDate)</td>
+                        <td>@r.CategoryName</td>
+                        <td class="rd-time">@Display.FinishTime(r.FinishTime)</td>
+                        <td>
+                            @if (r.FinishPosition is int pos)
+                            {
+                                <span class="rd-medal @(pos <= 3 ? "m" + pos : "")">@pos</span>
+                                <span class="ms-2">@Display.PositionText(pos, r.TotalFinishers)</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,76 @@
+@model ResultsPageViewModel
+@{
+    ViewData["Title"] = "Results entry";
+    var notYetHeld = Model.Selected is not null && Model.Selected.EventDate > DateOnly.FromDateTime(DateTime.Today);
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>Results entry</h1>
+            <p>Capture finish times and positions. Saved results are published to participants straight away.</p>
+        </div>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <partial name="_NoEvents" />
+    }
+    else
+    {
+        <partial name="_EventPicker" model="Model" view-data='new ViewDataDictionary(ViewData) { { "Controller", "OrganiserResults" } }' />
+
+        @if (notYetHeld)
+        {
+            <div class="alert alert-warning rd-alert d-flex gap-2"><i class="bi bi-exclamation-triangle-fill"></i><div>This event takes place on <strong>@Display.Date(Model.Selected!.EventDate)</strong>. Results are normally captured after the event concludes.</div></div>
+        }
+
+        @if (!Model.Enrolments.Any())
+        {
+            <div class="rd-empty py-4">
+                <i class="bi bi-stopwatch"></i>
+                <h3>No participants to score</h3>
+                <p class="mb-0">There are no active enrolments for <strong>@Model.Selected!.EventName</strong> yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="rd-table table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Participant</th><th>Category</th><th>Status</th><th style="width:130px">Position</th><th style="width:170px">Finish time</th><th class="text-end">Save</th></tr></thead>
+                    <tbody>
+                    @foreach (var en in Model.Enrolments)
+                    {
+                        var formId = $"result-{en.EnrolmentId}";
+                        <tr>
+                            <td class="fw-semibold">@en.ParticipantName</td>
+                            <td>@en.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="en.Status" /></td>
+                            <td>
+                                <input form="@formId" name="FinishPosition" type="number" min="1" class="form-control form-control-sm" value="@en.FinishPosition" placeholder="e.g. 47" aria-label="Finishing position for @en.ParticipantName" />
+                            </td>
+                            <td>
+                                <input form="@formId" name="FinishTime" type="text" inputmode="numeric" pattern="\d{1,2}:\d{2}:\d{2}" class="form-control form-control-sm rd-time" value="@(en.FinishTime?.ToString("HH:mm:ss"))" placeholder="hh:mm:ss" aria-label="Finish time for @en.ParticipantName" />
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <form id="@formId" asp-action="Save" method="post" class="d-inline">
+                                    <input type="hidden" name="EventId" value="@en.EventId" />
+                                    <input type="hidden" name="EnrolmentId" value="@en.EnrolmentId" />
+                                    <input type="hidden" name="ResultId" value="@en.ResultId" />
+                                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-cloud-check"></i> @(en.ResultId is null ? "Save & publish" : "Update")</button>
+                                </form>
+                                @if (en.ResultId is int rid)
+                                {
+                                    <form asp-action="Delete" asp-route-eventId="@en.EventId" asp-route-id="@rid" method="post" class="d-inline" data-confirm="Remove this result?">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Remove result"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small mt-3"><i class="bi bi-info-circle"></i> Enter the finish time as <code>hh:mm:ss</code>, for example <code>00:47:15</code>.</p>
+        }
+    }
+</div>

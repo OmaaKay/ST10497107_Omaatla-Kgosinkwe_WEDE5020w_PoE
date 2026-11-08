@@ -1,0 +1,86 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Organiser dashboard";
+    var next = Model.NextEvent;
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Welcome back, @Model.OrganiserName. Here's how your events are shaping up.</p>
+        </div>
+        <a class="btn btn-primary" asp-controller="OrganiserEvents" asp-action="Create"><i class="bi bi-plus-lg"></i> New event</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3"><div class="rd-stat"><i class="bi bi-calendar-event"></i><div class="rd-stat-value">@Model.TotalEvents</div><div class="rd-stat-label">Events created</div></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="rd-stat stat-yellow"><i class="bi bi-people-fill"></i><div class="rd-stat-value">@Model.TotalEnrolments</div><div class="rd-stat-label">Total enrolments</div></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="rd-stat stat-green"><i class="bi bi-flag-fill"></i><div class="rd-stat-value">@Model.Upcoming.Count</div><div class="rd-stat-label">Upcoming events</div></div></div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="rd-stat stat-blue"><i class="bi bi-alarm"></i>
+                <div class="rd-stat-value">@(next is null ? "—" : next.EventDate.ToString("dd MMM"))</div>
+                <div class="rd-stat-label">Next event date</div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <partial name="_NoEvents" />
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <h2 class="mb-3">Your events</h2>
+                <div class="rd-table table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Event</th><th>Date</th><th>Enrolments</th><th>Status</th><th class="text-end">Manage</th></tr></thead>
+                        <tbody>
+                        @foreach (var e in Model.Events.OrderBy(e => e.EventDate))
+                        {
+                            <tr>
+                                <td class="fw-semibold">@e.EventName<div class="small text-muted fw-normal">@e.Location</div></td>
+                                <td>@Display.Date(e.EventDate)</td>
+                                <td>
+                                    <strong>@e.EnrolmentCount</strong> <span class="text-muted">/ @e.MaximumParticipants</span>
+                                </td>
+                                <td><partial name="_StatusBadge" model="e.Status" /></td>
+                                <td class="text-end text-nowrap">
+                                    <a class="btn btn-outline-secondary btn-sm" asp-controller="OrganiserCategories" asp-action="Index" asp-route-eventId="@e.EventId" title="Categories"><i class="bi bi-tags"></i></a>
+                                    <a class="btn btn-outline-secondary btn-sm" asp-controller="OrganiserEnrolments" asp-action="Index" asp-route-eventId="@e.EventId" title="Enrolments"><i class="bi bi-people"></i></a>
+                                    <a class="btn btn-outline-secondary btn-sm" asp-controller="OrganiserResults" asp-action="Index" asp-route-eventId="@e.EventId" title="Results"><i class="bi bi-stopwatch"></i></a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <h2 class="mb-3">Upcoming dates</h2>
+                <div class="rd-panel">
+                    @if (!Model.Upcoming.Any())
+                    {
+                        <p class="text-muted mb-0">No upcoming events. Time to plan the next one!</p>
+                    }
+                    else
+                    {
+                        foreach (var e in Model.Upcoming.Take(6))
+                        {
+                            var days = e.EventDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber;
+                            <div class="rd-fact">
+                                <i class="bi bi-calendar-check"></i>
+                                <div>
+                                    <small>@(days == 0 ? "Today" : days == 1 ? "Tomorrow" : $"In {days} days")</small>
+                                    <strong>@e.EventName</strong><br />
+                                    <span class="text-muted small">@Display.Date(e.EventDate)</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,18 @@
+@* Dropdown that switches which of the Organiser's events a page is working on. ViewData["Controller"] = target controller. *@
+@model EventPickerViewModel
+@{
+    var target = (string)ViewData["Controller"]!;
+}
+<form method="get" asp-controller="@target" asp-action="Index" class="rd-picker">
+    <label for="eventId" class="form-label mb-1">Event</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-flag-fill"></i></span>
+        <select id="eventId" name="eventId" class="form-select" data-autosubmit>
+            @foreach (var e in Model.Events)
+            {
+                <option value="@e.EventId" selected="@(e.EventId == Model.Selected?.EventId)">@e.EventName — @Display.Date(e.EventDate)</option>
+            }
+        </select>
+        <button class="btn btn-dark" type="submit">Go</button>
+    </div>
+</form>

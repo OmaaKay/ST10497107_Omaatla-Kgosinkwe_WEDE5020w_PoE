@@ -1,0 +1,84 @@
+@model CategoriesPageViewModel
+@{
+    ViewData["Title"] = "Categories";
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>Categories</h1>
+            <p>Define the age or distance categories participants can choose when they enrol.</p>
+        </div>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <partial name="_NoEvents" />
+    }
+    else
+    {
+        <partial name="_EventPicker" model="Model" view-data='new ViewDataDictionary(ViewData) { { "Controller", "OrganiserCategories" } }' />
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <h2 class="mb-3">Categories for @Model.Selected!.EventName</h2>
+                @if (!Model.Categories.Any())
+                {
+                    <div class="rd-empty py-4">
+                        <i class="bi bi-tags"></i>
+                        <h3>No categories yet</h3>
+                        <p class="mb-0">Add at least one category so participants can enrol (e.g. "Under 18", "Open 5km", "Masters 40+").</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="rd-table table-responsive">
+                        <table class="table align-middle">
+                            <thead><tr><th>Category</th><th>Distance</th><th>Description</th><th class="text-end">Actions</th></tr></thead>
+                            <tbody>
+                            @foreach (var c in Model.Categories)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@c.CategoryName</td>
+                                    <td>@Display.Distance(c.DistanceKm)</td>
+                                    <td class="text-muted small">@(string.IsNullOrWhiteSpace(c.Description) ? "—" : c.Description)</td>
+                                    <td class="text-end text-nowrap">
+                                        <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-eventId="@c.EventId" asp-route-id="@c.EventCategoryId"><i class="bi bi-pencil-square"></i> Edit</a>
+                                        <form asp-action="Delete" asp-route-eventId="@c.EventId" asp-route-id="@c.EventCategoryId" method="post" class="d-inline" data-confirm="Remove the category &quot;@c.CategoryName&quot;?">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-5">
+                <div class="rd-panel">
+                    <h2>Add a category</h2>
+                    <form asp-action="Add" method="post" novalidate>
+                        <input type="hidden" name="EventId" value="@Model.Selected.EventId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                        <div class="mb-3">
+                            <label class="form-label" for="CategoryName">Category name</label>
+                            <input id="CategoryName" name="CategoryName" class="form-control" value="@Model.NewCategory.CategoryName" placeholder="e.g. Under 18" />
+                            <span asp-validation-for="NewCategory.CategoryName" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="DistanceKm">Distance (km) <span class="text-muted fw-normal">optional</span></label>
+                            <input id="DistanceKm" name="DistanceKm" type="number" step="0.1" min="0.1" class="form-control" value="@(Model.NewCategory.DistanceKm?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))" />
+                            <span asp-validation-for="NewCategory.DistanceKm" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="Description">Description <span class="text-muted fw-normal">optional</span></label>
+                            <textarea id="Description" name="Description" class="form-control" rows="2">@Model.NewCategory.Description</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" data-busy="Adding…"><i class="bi bi-plus-lg"></i> Add category</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

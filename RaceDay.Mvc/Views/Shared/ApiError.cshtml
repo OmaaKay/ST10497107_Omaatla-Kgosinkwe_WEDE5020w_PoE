@@ -1,0 +1,10 @@
+@model string
+@{
+    ViewData["Title"] = "Service unavailable";
+}
+<div class="container rd-state-page text-center">
+    <div class="rd-state-icon"><i class="bi bi-wifi-off"></i></div>
+    <h1>We couldn't load that</h1>
+    <p class="lead">@(string.IsNullOrWhiteSpace(Model) ? "The RaceDay service is not responding right now." : Model)</p>
+    <a class="btn btn-primary" href="javascript:location.reload()"><i class="bi bi-arrow-clockwise"></i> Try again</a>
+</div>

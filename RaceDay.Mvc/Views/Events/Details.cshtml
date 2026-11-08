@@ -1,0 +1,120 @@
+@model EventDetailsViewModel
+@{
+    var e = Model.Event;
+    ViewData["Title"] = e.EventName;
+    var open = Display.RegistrationOpen(e);
+    var mine = Model.MyEnrolment;
+    var spotsLeft = Math.Max(0, e.MaximumParticipants - e.EnrolmentCount);
+}
+<div class="container">
+    <div class="rd-detail-hero">
+        @if (!string.IsNullOrEmpty(e.BannerUrl))
+        {
+            <img src="@e.BannerUrl" alt="@e.EventName banner" />
+        }
+        else
+        {
+            <div class="rd-banner-placeholder"><i class="bi @Display.TypeIcon(e.EventType)"></i></div>
+        }
+        <div class="rd-detail-overlay">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                <span class="rd-type-chip position-static"><i class="bi @Display.TypeIcon(e.EventType)"></i> @e.EventType</span>
+                <partial name="_StatusBadge" model="@(open ? "Open" : (e.Status == "Open" ? "Closed" : e.Status))" />
+            </div>
+            <h1>@e.EventName</h1>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-7">
+            <div class="rd-panel mb-4">
+                <h2>About this event</h2>
+                <p class="mb-0" style="white-space:pre-line">@(string.IsNullOrWhiteSpace(e.Description) ? "The organiser hasn't added a description yet." : e.Description)</p>
+            </div>
+
+            <div class="rd-panel">
+                <h2>Event details</h2>
+                <div class="rd-fact"><i class="bi bi-calendar-event"></i><div><small>Date &amp; start time</small>@Display.Date(e.EventDate) at @Display.Time(e.StartTime)</div></div>
+                <div class="rd-fact"><i class="bi bi-geo-alt"></i><div><small>Location</small>@e.Location</div></div>
+                <div class="rd-fact"><i class="bi bi-signpost-split"></i><div><small>Distance</small>@Display.Distance(e.DistanceKm)</div></div>
+                <div class="rd-fact"><i class="bi bi-hourglass-split"></i><div><small>Registration closes</small>@Display.Date(e.RegistrationDeadline)</div></div>
+                <div class="rd-fact"><i class="bi bi-people"></i><div><small>Places</small>@e.EnrolmentCount of @e.MaximumParticipants taken · @spotsLeft left</div></div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="rd-panel mb-4">
+                <h2>Categories</h2>
+                @if (!Model.Categories.Any())
+                {
+                    <p class="text-muted mb-0">The organiser hasn't published categories for this event yet.</p>
+                }
+                else if (Model.IsParticipant && mine is null && open)
+                {
+                    <p class="text-muted">Choose the category you want to enter, then enrol.</p>
+                    <form asp-controller="Events" asp-action="Enrol" asp-route-id="@e.EventId" method="post">
+                        <div class="d-grid gap-2 mb-3">
+                            @foreach (var c in Model.Categories)
+                            {
+                                <div>
+                                    <input type="radio" class="btn-check" name="categoryId" id="cat@(c.EventCategoryId)" value="@c.EventCategoryId" required />
+                                    <label class="rd-category" for="cat@(c.EventCategoryId)">
+                                        <strong>@c.CategoryName</strong>
+                                        @if (c.DistanceKm is not null) { <span class="badge text-bg-dark ms-1">@Display.Distance(c.DistanceKm)</span> }
+                                        @if (!string.IsNullOrWhiteSpace(c.Description)) { <br /><small class="text-muted">@c.Description</small> }
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg w-100" data-busy="Enrolling…"><i class="bi bi-lightning-charge-fill"></i> Enter this event</button>
+                    </form>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var c in Model.Categories)
+                        {
+                            <li class="list-group-item px-0">
+                                <strong>@c.CategoryName</strong>
+                                @if (c.DistanceKm is not null) { <span class="badge text-bg-dark ms-1">@Display.Distance(c.DistanceKm)</span> }
+                                @if (!string.IsNullOrWhiteSpace(c.Description)) { <div class="small text-muted">@c.Description</div> }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            @if (Model.IsParticipant)
+            {
+                if (mine is not null)
+                {
+                    <div class="rd-panel">
+                        <h3>Your enrolment</h3>
+                        <p class="mb-2">Category: <strong>@mine.CategoryName</strong></p>
+                        <p class="mb-3">Status: <partial name="_StatusBadge" model="mine.Status" /></p>
+                        <a class="btn btn-outline-primary" asp-controller="MyEvents" asp-action="Index">Go to My Events</a>
+                    </div>
+                }
+                else if (!open)
+                {
+                    <div class="alert alert-warning rd-alert mb-0"><i class="bi bi-lock-fill"></i> Registration for this event is closed.</div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info rd-alert mb-0"><i class="bi bi-eye-fill"></i> You're viewing this event as an Organiser. Only Participants can enrol.</div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        @if (Model.IsParticipant)
+        {
+            <a asp-controller="Home" asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Back to events</a>
+        }
+        else
+        {
+            <a asp-controller="OrganiserEvents" asp-action="Index" class="btn btn-link px-0"><i class="bi bi-arrow-left"></i> Back to my events</a>
+        }
+    </div>
+</div>

@@ -1,0 +1,80 @@
+@model EnrolmentsPageViewModel
+@{
+    ViewData["Title"] = "Enrolments";
+    var pending = Model.Enrolments.Count(e => e.Status == "Pending");
+    var confirmed = Model.Enrolments.Count(e => e.Status == "Confirmed" || e.Status == "Completed");
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>Enrolments</h1>
+            <p>See who has enrolled for an event and confirm their place.</p>
+        </div>
+    </div>
+
+    @if (!Model.Events.Any())
+    {
+        <partial name="_NoEvents" />
+    }
+    else
+    {
+        <partial name="_EventPicker" model="Model" view-data='new ViewDataDictionary(ViewData) { { "Controller", "OrganiserEnrolments" } }' />
+
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4"><div class="rd-stat"><i class="bi bi-people-fill"></i><div class="rd-stat-value">@Model.Enrolments.Count</div><div class="rd-stat-label">Total enrolments</div></div></div>
+            <div class="col-sm-4"><div class="rd-stat stat-yellow"><i class="bi bi-hourglass-split"></i><div class="rd-stat-value">@pending</div><div class="rd-stat-label">Pending</div></div></div>
+            <div class="col-sm-4"><div class="rd-stat stat-green"><i class="bi bi-patch-check-fill"></i><div class="rd-stat-value">@confirmed</div><div class="rd-stat-label">Confirmed</div></div></div>
+        </div>
+
+        @if (!Model.Enrolments.Any())
+        {
+            <div class="rd-empty py-4">
+                <i class="bi bi-person-plus"></i>
+                <h3>No enrolments yet</h3>
+                <p class="mb-0">Participants who enrol for <strong>@Model.Selected!.EventName</strong> will appear here.</p>
+            </div>
+        }
+        else
+        {
+            <div class="rd-table table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>Participant</th><th>Category</th><th>Enrolled on</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                    @foreach (var en in Model.Enrolments)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@en.ParticipantName</td>
+                            <td>@en.CategoryName</td>
+                            <td>@en.EnrolmentDate.ToString("d MMM yyyy")</td>
+                            <td><partial name="_StatusBadge" model="en.Status" /></td>
+                            <td class="text-end text-nowrap">
+                                @if (en.Status == "Pending")
+                                {
+                                    <form asp-action="SetStatus" asp-route-eventId="@en.EventId" asp-route-id="@en.EnrolmentId" method="post" class="d-inline">
+                                        <input type="hidden" name="status" value="Confirmed" />
+                                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i> Confirm</button>
+                                    </form>
+                                }
+                                @if (en.Status == "Confirmed" || en.Status == "Pending")
+                                {
+                                    <form asp-action="SetStatus" asp-route-eventId="@en.EventId" asp-route-id="@en.EnrolmentId" method="post" class="d-inline" data-confirm="Cancel the enrolment for @en.ParticipantName?">
+                                        <input type="hidden" name="status" value="Cancelled" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-lg"></i> Cancel</button>
+                                    </form>
+                                }
+                                @if (en.Status == "Cancelled")
+                                {
+                                    <form asp-action="SetStatus" asp-route-eventId="@en.EventId" asp-route-id="@en.EnrolmentId" method="post" class="d-inline">
+                                        <input type="hidden" name="status" value="Pending" />
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Reinstate</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

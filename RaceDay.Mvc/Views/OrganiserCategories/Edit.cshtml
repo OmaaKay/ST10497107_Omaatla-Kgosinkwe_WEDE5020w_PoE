@@ -1,0 +1,36 @@
+@model CategoryFormViewModel
+@{
+    ViewData["Title"] = "Edit category";
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>Edit category</h1>
+            <p>@(ViewBag.EventName as string)</p>
+        </div>
+        <a class="btn btn-outline-secondary" asp-action="Index" asp-route-eventId="@Model.EventId"><i class="bi bi-arrow-left"></i> Back to categories</a>
+    </div>
+
+    <div class="rd-auth-wrap" style="margin-top:0;max-width:640px">
+        <div class="rd-panel">
+            <form asp-action="Edit" asp-route-eventId="@Model.EventId" asp-route-id="@Model.CategoryId" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                <div class="mb-3">
+                    <label asp-for="CategoryName" class="form-label"></label>
+                    <input asp-for="CategoryName" class="form-control" />
+                    <span asp-validation-for="CategoryName" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="DistanceKm">Distance (km)</label>
+                    <input id="DistanceKm" name="DistanceKm" type="number" step="0.1" min="0.1" class="form-control" value="@(Model.DistanceKm?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))" />
+                    <span asp-validation-for="DistanceKm" class="text-danger small"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-busy="Saving…"><i class="bi bi-check2-circle"></i> Save category</button>
+            </form>
+        </div>
+    </div>
+</div>

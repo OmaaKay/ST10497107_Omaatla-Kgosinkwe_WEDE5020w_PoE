@@ -1,0 +1,96 @@
+@model EventFormViewModel
+@{
+    var editing = Model.EventId is not null;
+    ViewData["Title"] = editing ? "Edit event" : "Create event";
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>@(editing ? "Edit event" : "Create event")</h1>
+            <p>@(editing ? "Update the details of your event." : "Fill in the details to publish a new event.")</p>
+        </div>
+        <a class="btn btn-outline-secondary" asp-action="Index"><i class="bi bi-arrow-left"></i> Back to events</a>
+    </div>
+
+    <form asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@Model.EventId" method="post" enctype="multipart/form-data" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="rd-panel">
+                    <h2>Event details</h2>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="EventName" class="form-label"></label>
+                            <input asp-for="EventName" class="form-control" placeholder="e.g. Sunrise 10K Fun Run" />
+                            <span asp-validation-for="EventName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Tell participants what to expect…"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="EventDate" class="form-label">Event date</label>
+                            <input id="EventDate" name="EventDate" type="date" class="form-control" value="@(Model.EventDate?.ToString("yyyy-MM-dd"))" />
+                            <span asp-validation-for="EventDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="StartTime" class="form-label">Start time</label>
+                            <input id="StartTime" name="StartTime" type="time" class="form-control" value="@(Model.StartTime?.ToString("HH:mm"))" />
+                            <span asp-validation-for="StartTime" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Location" class="form-label"></label>
+                            <input asp-for="Location" class="form-control" placeholder="e.g. Delta Park, Johannesburg" />
+                            <span asp-validation-for="Location" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="DistanceKm" class="form-label">Distance (km)</label>
+                            <input id="DistanceKm" name="DistanceKm" type="number" step="0.1" min="0.1" class="form-control" value="@(Model.DistanceKm?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))" />
+                            <span asp-validation-for="DistanceKm" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="EventType" class="form-label"></label>
+                            <select asp-for="EventType" class="form-select">
+                                @foreach (var t in Enum.GetValues<EventType>())
+                                {
+                                    <option value="@t" selected="@(Model.EventType == t)">@t</option>
+                                }
+                            </select>
+                            <span asp-validation-for="EventType" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="MaximumParticipants" class="form-label"></label>
+                            <input asp-for="MaximumParticipants" type="number" min="1" class="form-control" />
+                            <span asp-validation-for="MaximumParticipants" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="RegistrationDeadline" class="form-label">Registration deadline</label>
+                            <input id="RegistrationDeadline" name="RegistrationDeadline" type="date" class="form-control" value="@(Model.RegistrationDeadline?.ToString("yyyy-MM-dd"))" />
+                            <span asp-validation-for="RegistrationDeadline" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="rd-panel">
+                    <h2>Event banner</h2>
+                    @if (!string.IsNullOrEmpty(Model.ExistingBannerUrl))
+                    {
+                        <img id="bannerPreview" src="@Model.ExistingBannerUrl" alt="Current banner" class="img-fluid rd-banner-preview mb-3 w-100" />
+                    }
+                    else
+                    {
+                        <img id="bannerPreview" alt="Banner preview" class="img-fluid rd-banner-preview mb-3 w-100 d-none" />
+                    }
+                    <input id="Banner" name="Banner" type="file" class="form-control" accept="image/png,image/jpeg,image/webp,image/gif" data-preview="#bannerPreview" />
+                    <div class="form-text">JPG, PNG, WEBP or GIF, up to 5 MB. Stored securely in the cloud and shown on the event page.</div>
+                    <span asp-validation-for="Banner" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-4" data-busy="Saving…"><i class="bi bi-check2-circle"></i> @(editing ? "Save changes" : "Create event")</button>
+            </div>
+        </div>
+    </form>
+</div>

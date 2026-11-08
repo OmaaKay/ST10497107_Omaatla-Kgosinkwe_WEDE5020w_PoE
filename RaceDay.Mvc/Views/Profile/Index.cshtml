@@ -1,0 +1,86 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = "My profile";
+    var fullName = $"{Model.FirstName} {Model.LastName}".Trim();
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>My profile</h1>
+            <p>Keep your details up to date and add a profile picture.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="rd-panel text-center">
+                @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+                {
+                    <img id="picPreview" class="rd-profile-pic mb-3" src="@Model.ProfilePictureUrl" alt="Profile picture" />
+                }
+                else
+                {
+                    <div id="picInitials" class="rd-profile-pic rd-profile-initials mb-3 mx-auto">@Display.Initials(fullName)</div>
+                    <img id="picPreview" class="rd-profile-pic mb-3 d-none" alt="Profile picture preview" />
+                }
+                <h2 class="mb-1">@fullName</h2>
+                <p class="mb-1 text-muted">@Model.Email</p>
+                <span class="rd-role-pill">@Model.Role</span>
+
+                <hr />
+                <form asp-action="UploadPicture" method="post" enctype="multipart/form-data" class="text-start">
+                    <label for="picture" class="form-label">Profile picture</label>
+                    <input id="picture" name="picture" type="file" class="form-control mb-1" accept="image/png,image/jpeg,image/webp,image/gif" data-preview="#picPreview" required />
+                    <div class="form-text mb-3">JPG, PNG, WEBP or GIF, up to 5 MB.</div>
+                    <button type="submit" class="btn btn-primary w-100" data-busy="Uploading…"><i class="bi bi-cloud-arrow-up-fill"></i> Upload picture</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="rd-panel">
+                <h2>Personal information</h2>
+                <form asp-action="Update" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger rd-alert"></div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <input asp-for="FirstName" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <input asp-for="LastName" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="email">Email</label>
+                            <input id="email" class="form-control" value="@Model.Email" disabled />
+                            <div class="form-text">Your email is your login and can't be changed here.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" type="tel" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="DateOfBirth" class="form-label">Date of birth</label>
+                            <input id="DateOfBirth" name="DateOfBirth" type="date" class="form-control" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-4" data-busy="Saving…"><i class="bi bi-check2-circle"></i> Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Hide the initials placeholder once a preview image is chosen.
+        document.getElementById('picture')?.addEventListener('change', function () {
+            document.getElementById('picInitials')?.classList.add('d-none');
+        });
+    </script>
+}

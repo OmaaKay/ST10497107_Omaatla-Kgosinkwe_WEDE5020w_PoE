@@ -1,0 +1,56 @@
+@model List<EventDto>
+@{
+    ViewData["Title"] = "Manage events";
+}
+<div class="container">
+    <div class="rd-page-header">
+        <div>
+            <h1>Manage events</h1>
+            <p>Create, edit and remove the events you organise.</p>
+        </div>
+        <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> New event</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <partial name="_NoEvents" />
+    }
+    else
+    {
+        <div class="rd-table table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Banner</th><th>Event</th><th>When</th><th>Type</th><th>Distance</th><th>Enrolled</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td style="width:110px">
+                            @if (!string.IsNullOrEmpty(e.BannerUrl))
+                            {
+                                <img src="@e.BannerUrl" alt="" class="rounded" style="width:96px;height:54px;object-fit:cover" />
+                            }
+                            else
+                            {
+                                <div class="rounded d-flex align-items-center justify-content-center text-white" style="width:96px;height:54px;background:linear-gradient(135deg,#0b1220,#ff5a1f)"><i class="bi @Display.TypeIcon(e.EventType)"></i></div>
+                            }
+                        </td>
+                        <td class="fw-semibold">@e.EventName<div class="small text-muted fw-normal"><i class="bi bi-geo-alt"></i> @e.Location</div></td>
+                        <td>@Display.Date(e.EventDate)<div class="small text-muted">@Display.Time(e.StartTime)</div></td>
+                        <td>@e.EventType</td>
+                        <td>@Display.Distance(e.DistanceKm)</td>
+                        <td>@e.EnrolmentCount / @e.MaximumParticipants</td>
+                        <td><partial name="_StatusBadge" model="e.Status" /></td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-secondary btn-sm" asp-controller="Events" asp-action="Details" asp-route-id="@e.EventId" title="Preview"><i class="bi bi-eye"></i></a>
+                            <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@e.EventId"><i class="bi bi-pencil-square"></i> Edit</a>
+                            <form asp-action="Delete" asp-route-id="@e.EventId" method="post" class="d-inline" data-confirm="Delete &quot;@e.EventName&quot;? Participants will no longer see it.">
+                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

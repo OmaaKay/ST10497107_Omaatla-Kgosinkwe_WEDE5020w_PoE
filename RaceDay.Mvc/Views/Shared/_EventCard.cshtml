@@ -1,0 +1,45 @@
+@model EventDto
+@{
+    var open = Display.RegistrationOpen(Model);
+    var pct = Model.MaximumParticipants > 0 ? Math.Min(100, (int)Math.Round(Model.EnrolmentCount * 100.0 / Model.MaximumParticipants)) : 0;
+}
+<div class="card rd-event-card h-100">
+    <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId" class="rd-event-banner" aria-label="View @Model.EventName">
+        @if (!string.IsNullOrEmpty(Model.BannerUrl))
+        {
+            <img src="@Model.BannerUrl" alt="@Model.EventName banner" loading="lazy" />
+        }
+        else
+        {
+            <div class="rd-banner-placeholder"><i class="bi @Display.TypeIcon(Model.EventType)"></i></div>
+        }
+        <span class="rd-type-chip"><i class="bi @Display.TypeIcon(Model.EventType)"></i> @Model.EventType</span>
+        <span class="rd-date-chip"><b>@Model.EventDate.ToString("dd")</b>@Model.EventDate.ToString("MMM").ToUpperInvariant()</span>
+    </a>
+    <div class="card-body d-flex flex-column">
+        <h3 class="rd-card-title"><a asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId">@Model.EventName</a></h3>
+        <ul class="rd-meta list-unstyled mb-3">
+            <li><i class="bi bi-geo-alt-fill"></i> @Model.Location</li>
+            <li><i class="bi bi-clock-fill"></i> @Display.Date(Model.EventDate) · @Display.Time(Model.StartTime)</li>
+            <li><i class="bi bi-signpost-split-fill"></i> @Display.Distance(Model.DistanceKm)</li>
+        </ul>
+        <div class="mt-auto">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>@Model.EnrolmentCount / @Model.MaximumParticipants enrolled</span>
+                <span>@pct%</span>
+            </div>
+            <div class="progress rd-progress mb-3" role="progressbar" aria-label="Enrolment" aria-valuenow="@pct" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:@pct%"></div></div>
+            <div class="d-flex justify-content-between align-items-center">
+                @if (open)
+                {
+                    <partial name="_StatusBadge" model="@("Open")" />
+                }
+                else
+                {
+                    <partial name="_StatusBadge" model="@("Closed")" />
+                }
+                <a class="btn btn-primary btn-sm" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventId">View event <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
