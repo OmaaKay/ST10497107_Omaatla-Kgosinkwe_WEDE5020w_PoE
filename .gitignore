@@ -1,0 +1,23 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+
+## IDE
+.vs/
+.vscode/
+*.DotSettings.user
+
+## Local secrets — never commit real connection strings
+RaceDay.Api/appsettings.Development.json
+**/secrets.json
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Part 3
+RaceDay.Mvc/appsettings.Development.json
+.env
+.part3_commit_step
