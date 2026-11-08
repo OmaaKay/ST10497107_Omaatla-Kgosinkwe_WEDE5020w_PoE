@@ -98,3 +98,5 @@ MVC → http://localhost:8080, API/Swagger → http://localhost:5100/swagger.
 * Deleting an event is a soft delete (status *Cancelled*) so historical enrolments and results are never lost.
 * Invalid input never shows raw errors: forms re-display with field messages, and unexpected failures show a friendly page.
 
+
+

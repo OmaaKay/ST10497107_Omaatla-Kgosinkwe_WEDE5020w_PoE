@@ -1,0 +1,45 @@
+# Full stack in one command:   docker compose up --build
+#   MVC web app   -> http://localhost:8080
+#   API + Swagger -> http://localhost:5100/swagger
+# Provide your Azure storage connection string first (see README):
+#   Windows PowerShell:  $env:AZURE_STORAGE_CONNECTION_STRING="..."
+#   macOS/Linux:         export AZURE_STORAGE_CONNECTION_STRING="..."
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "RaceDay_Passw0rd!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    depends_on:
+      - sqlserver
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__RaceDayDb: "Server=sqlserver,1433;Database=RaceDay;User Id=sa;Password=RaceDay_Passw0rd!;TrustServerCertificate=True;"
+      AzureBlob__ConnectionString: "${AZURE_STORAGE_CONNECTION_STRING:-}"
+      AzureBlob__ContainerName: raceday-images
+      DisableHttpsRedirection: "true"
+    ports:
+      - "5100:8080"
+
+  mvc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    environment:
+      ApiSettings__BaseUrl: http://api:8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  sqldata:

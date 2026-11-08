@@ -1,0 +1,6 @@
+{
+  "_comment": "Copy this file to appsettings.Development.json (which is gitignored) and fill in your real local SQL Server connection string. Never commit appsettings.Development.json.",
+  "ConnectionStrings": {
+    "RaceDayDb": "Server=localhost\\SQLEXPRESS;Database=RaceDay;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}

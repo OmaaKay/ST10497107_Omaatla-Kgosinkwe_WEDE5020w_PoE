@@ -1,0 +1,28 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace RaceDay.Api.Dtos.Auth;
+
+/// <summary>Body for POST /api/auth/register.</summary>
+public class RegisterRequest
+{
+    [Required, MaxLength(50)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required, MaxLength(50)]
+    public string LastName { get; set; } = string.Empty;
+
+    [Required, EmailAddress, MaxLength(255)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, MinLength(8)]
+    public string Password { get; set; } = string.Empty;
+
+    [MaxLength(30)]
+    public string? PhoneNumber { get; set; }
+
+    public DateOnly? DateOfBirth { get; set; }
+
+    /// <summary>Must be "Participant" or "Organiser" (see RoleNames).</summary>
+    [Required]
+    public string Role { get; set; } = string.Empty;
+}
